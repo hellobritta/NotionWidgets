@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Clock</title>
+<style>
+body {
+background-color: #ffffff;
+font-family: "Barlow","Arial";
+}
+body {
+margin: 0;
+font-size: 16px;
+font-weight: 400;
+line-height: 1.5;
+width: 100vw;
+height: 100vh;
+display: flex;
+align-items: center;
+justify-content: flex-start;
+text-align: center;
+}
+body.center {
+justify-content: center;
+}
+body.right {
+justify-content: flex-end;
+text-align: right;
+}
+.clock {
+padding: 10px 20px;
+}
+h1 {
+letter-spacing: 1.5px;
+margin: 0;
+}
+h5 {
+margin: 0;
+font-weight: normal;
+font-size: 16px;
+}
+.title {
+color: #37352f;
+}
+.time {
+font-variant-numeric: tabular-nums;
+color: #f3ba9c;
+}
+.date {
+color: #37352f;
+font-size:14px;
+text-transform: uppercase;
+}
+</style>
+</head>
+
+<body class="center">
+<div class="clock">
+<h5 class="title"> </h5>
+<h1 class="time">--:--</h1>
+<h5 class="date">Sunday, Mar 28</h5>
+</div>
+</body>
+<script>
+const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const padLeft = (num) => {
+if (String(num).length > 2) {
+return num;
+}
+return String("00" + num).slice(-2);
+}
+
+setInterval(function() {
+if("America/Chicago") {
+const today = new Date();
+const timeInTZ = new Date(today.toLocaleString('en-US', {
+timeZone: 'America/Chicago'
+}))
+
+// time
+let hours = timeInTZ.getHours();
+const minutes = timeInTZ.getMinutes();
+const seconds = timeInTZ.getSeconds();
+const ampm = hours >= 12 ? 'PM' : 'AM';
+hours = hours % 12;
+hours = hours ? hours : 12;
+
+// date
+const day = days[timeInTZ.getDay()];
+const month = months[timeInTZ.getMonth()];
+const dateNum = timeInTZ.getDate();
+
+
+if (false) {
+document.querySelector(".time").innerHTML = padLeft(hours)+":"+padLeft(minutes)+":"+padLeft(seconds)+" "+ampm;
+} else {
+document.querySelector(".time").innerHTML = padLeft(hours)+":"+padLeft(minutes)+" "+ampm;
+}
+
+if(true) {
+document.querySelector(".date").innerHTML = day+", "+month+" "+padLeft(dateNum);
+}
+}
+}, 1000)
+</script>
+
+</html>
