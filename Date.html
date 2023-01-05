@@ -58,7 +58,7 @@ text-transform: uppercase;
 <body class="center">
 <div class="clock">
 <h5 class="title"> </h5>
-<h1 class="time"></h1>
+
 <h5 class="date">Sunday, Mar 28</h5>
 </div>
 </body>
@@ -79,13 +79,7 @@ const timeInTZ = new Date(today.toLocaleString('en-US', {
 timeZone: 'America/New_York'
 }))
 
-// time
-let hours = timeInTZ.getHours();
-const minutes = timeInTZ.getMinutes();
-const seconds = timeInTZ.getSeconds();
-const ampm = hours >= 12 ? 'PM' : 'AM';
-hours = hours % 12;
-hours = hours ? hours : 12;
+
 
 // date
 const day = days[timeInTZ.getDay()];
