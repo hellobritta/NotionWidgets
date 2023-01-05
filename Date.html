@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Date</title>
+<title>World Clock</title>
 <style>
 body {
 background-color: #ffffff;
@@ -14,8 +14,8 @@ margin: 0;
 font-size: 16px;
 font-weight: 400;
 line-height: 1.5;
-width: 100vw;
-height: 100vh;
+width: 25vw;
+height: 10vh;
 display: flex;
 align-items: center;
 justify-content: flex-start;
@@ -58,8 +58,8 @@ text-transform: uppercase;
 <body class="center">
 <div class="clock">
 <h5 class="title"> </h5>
-
-<h5 class="date">Sunday, Mar 28</h5>
+<h1 class="time"> </h1>
+<h5 class="date"> </h5>
 </div>
 </body>
 <script>
@@ -79,7 +79,13 @@ const timeInTZ = new Date(today.toLocaleString('en-US', {
 timeZone: 'America/New_York'
 }))
 
-
+// time
+let hours = timeInTZ.getHours();
+const minutes = timeInTZ.getMinutes();
+const seconds = timeInTZ.getSeconds();
+const ampm = hours >= 12 ? 'PM' : 'AM';
+hours = hours % 12;
+hours = hours ? hours : 12;
 
 // date
 const day = days[timeInTZ.getDay()];
@@ -88,12 +94,12 @@ const dateNum = timeInTZ.getDate();
 
 
 if (false) {
-document.querySelector(".time").innerHTML = padLeft(hours)+":"+padLeft(minutes)+":"+padLeft(seconds)+" "+ampm;
+document.querySelector(".time").innerHTML = "";
 } else {
-document.querySelector(".time").innerHTML = padLeft(hours)+":"+padLeft(minutes)+" "+ampm;
+document.querySelector(".time").innerHTML = "";
 }
 
-if(false) {
+if(true) {
 document.querySelector(".date").innerHTML = day+", "+month+" "+padLeft(dateNum);
 }
 }
