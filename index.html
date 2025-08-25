@@ -68,43 +68,40 @@ text-transform: uppercase;
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const padLeft = (num) => {
-if (String(num).length > 2) {
-return num;
-}
-return String("00" + num).slice(-2);
+  if (String(num).length > 2) {
+    return num;
+  }
+  return String("00" + num).slice(-2);
 }
 
 setInterval(function() {
-if("America/New_York") {
-const today = new Date();
-const timeInTZ = new Date(today.toLocaleString('en-US', {
-timeZone: 'America/New_York'
-}))
+  const today = new Date();
 
-// time
-let hours = timeInTZ.getHours();
-const minutes = timeInTZ.getMinutes();
-const seconds = timeInTZ.getSeconds();
-const ampm = hours >= 12 ? 'PM' : 'AM';
-hours = hours % 12;
-hours = hours ? hours : 12;
+  // Use the user's local timezone directly
+  const timeInTZ = today;
 
-// date
-const day = days[timeInTZ.getDay()];
-const month = months[timeInTZ.getMonth()];
-const dateNum = timeInTZ.getDate();
+  // time
+  let hours = timeInTZ.getHours();
+  const minutes = timeInTZ.getMinutes();
+  const seconds = timeInTZ.getSeconds();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
 
+  // date
+  const day = days[timeInTZ.getDay()];
+  const month = months[timeInTZ.getMonth()];
+  const dateNum = timeInTZ.getDate();
 
-if (false) {
-document.querySelector(".time").innerHTML = padLeft(hours)+":"+padLeft(minutes)+":"+padLeft(seconds)+" "+ampm;
-} else {
-document.querySelector(".time").innerHTML = padLeft(hours)+":"+padLeft(minutes)+" "+ampm;
-}
+  if (false) {
+    document.querySelector(".time").innerHTML = padLeft(hours)+":"+padLeft(minutes)+":"+padLeft(seconds)+" "+ampm;
+  } else {
+    document.querySelector(".time").innerHTML = padLeft(hours)+":"+padLeft(minutes)+" "+ampm;
+  }
 
-if(true) {
-document.querySelector(".date").innerHTML = day+", "+month+" "+padLeft(dateNum);
-}
-}
+  if(true) {
+    document.querySelector(".date").innerHTML = day+", "+month+" "+padLeft(dateNum);
+  }
 }, 1000)
 </script>
 
