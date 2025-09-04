@@ -60,49 +60,40 @@ text-transform: uppercase;
 <body class="center">
 <div class="clock">
 <h5 class="title"> </h5>
-<h1 class="time">--:--</h1>
+<h1 class="time">--:--:--</h1>
 <h5 class="date"> </h5>
 </div>
 </body>
 <script>
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
 const padLeft = (num) => {
-  if (String(num).length > 2) {
-    return num;
-  }
-  return String("00" + num).slice(-2);
+  return String(num).padStart(2, "0");
 }
 
 setInterval(function() {
   const today = new Date();
 
-  // Use the user's local timezone directly
-  const timeInTZ = today;
-
-  // time
-  let hours = timeInTZ.getHours();
-  const minutes = timeInTZ.getMinutes();
-  const seconds = timeInTZ.getSeconds();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
+  // time (24-hour)
+  let hours = today.getHours();
+  const minutes = today.getMinutes();
+  const seconds = today.getSeconds();
 
   // date
-  const day = days[timeInTZ.getDay()];
-  const month = months[timeInTZ.getMonth()];
-  const dateNum = timeInTZ.getDate();
+  const day = days[today.getDay()];
+  const month = months[today.getMonth()];
+  const dateNum = today.getDate();
 
-  if (false) {
-    document.querySelector(".time").innerHTML = padLeft(hours)+":"+padLeft(minutes)+":"+padLeft(seconds)+" "+ampm;
-  } else {
-    document.querySelector(".time").innerHTML = padLeft(hours)+":"+padLeft(minutes)+" "+ampm;
-  }
+  // show hh:mm:ss (24-hour, no AM/PM)
+  document.querySelector(".time").innerHTML = 
+    padLeft(hours) + ":" + padLeft(minutes) + ":" + padLeft(seconds);
 
-  if(true) {
-    document.querySelector(".date").innerHTML = day+", "+month+" "+padLeft(dateNum);
-  }
-}, 1000)
+  // show date
+  document.querySelector(".date").innerHTML = 
+    day + ", " + month + " " + padLeft(dateNum);
+
+}, 1000);
 </script>
-
+  
 </html>
