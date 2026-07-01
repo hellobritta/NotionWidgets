@@ -25,9 +25,10 @@ body {
 .clock {
   padding: 10px 10px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 18px;
 }
 h1 {
   letter-spacing: 1.5px;
@@ -38,6 +39,9 @@ h1 {
   font-size: 1.75rem;
   font-weight: 600;
   letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+  min-width: 7ch;
+  text-align: center;
 }
 .date-box {
   display: inline-flex;
@@ -46,9 +50,9 @@ h1 {
   justify-content: center;
   border: 2px solid #37352f;
   border-radius: 10px;
-  padding: 10px 5px 10px;
+  padding: 10px 6px;
   min-width: 24px;
-  gap: 2px;
+  gap: 1px;
 }
 .date-num {
   color: #37352f;
@@ -68,19 +72,17 @@ h1 {
 </head>
 <body>
 <div class="clock">
+  <h1 class="time">--:--:--</h1>
   <div class="date-box">
     <span class="date-num">--</span>
     <span class="date-label">--- ---</span>
   </div>
-  <h1 class="time">--:--:--</h1>
 </div>
 </body>
 <script>
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 const padLeft = (num) => String(num).padStart(2, "0");
-
 setInterval(function() {
   const today = new Date();
   const hours = today.getHours();
@@ -89,10 +91,8 @@ setInterval(function() {
   const day = days[today.getDay()];
   const month = months[today.getMonth()];
   const dateNum = today.getDate();
-
   document.querySelector(".time").innerHTML =
     padLeft(hours) + ":" + padLeft(minutes) + ":" + padLeft(seconds);
-
   document.querySelector(".date-num").innerHTML = padLeft(dateNum);
   document.querySelector(".date-label").innerHTML = day + " " + month;
 }, 1000);
