@@ -25,10 +25,9 @@ body {
 .clock {
   padding: 10px 10px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 18px;
+  gap: 4px;
 }
 h1 {
   letter-spacing: 1.5px;
@@ -36,46 +35,39 @@ h1 {
 }
 .time {
   color: #b0c8a4;
-  font-size: 2.0rem;
+  font-size: 1.75rem;
   font-weight: 600;
   letter-spacing: 2px;
   font-variant-numeric: tabular-nums;
-  min-width: 7ch;
-  text-align: center;
 }
-.date-box {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #37352f;
-  border-radius: 10px;
-  padding: 10px 6px;
-  min-width: 24px;
-  gap: 1px;
-}
-.date-num {
+.date {
   color: #37352f;
-  font-size: 1.0rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  line-height: 1.1;
-}
-.date-label {
-  color: #37352f;
-  font-size: 0.60rem;
-  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.date svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
 }
 </style>
 </head>
 <body>
 <div class="clock">
   <h1 class="time">--:--:--</h1>
-  <div class="date-box">
-    <span class="date-num">--</span>
-    <span class="date-label">--- ---</span>
+  <div class="date">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37352f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+    <span class="date-text"> </span>
   </div>
 </div>
 </body>
@@ -93,8 +85,8 @@ setInterval(function() {
   const dateNum = today.getDate();
   document.querySelector(".time").innerHTML =
     padLeft(hours) + ":" + padLeft(minutes) + ":" + padLeft(seconds);
-  document.querySelector(".date-num").innerHTML = padLeft(dateNum);
-  document.querySelector(".date-label").innerHTML = day + " " + month;
+  document.querySelector(".date-text").innerHTML =
+    day + ", " + month + " " + padLeft(dateNum);
 }, 1000);
 </script>
 </html>
