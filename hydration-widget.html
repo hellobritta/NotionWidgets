@@ -15,15 +15,10 @@
   }
 
   .hydro-wrap {
-    position: relative;
-    padding: 16px 12px 32px;
-  }
-
-  .hydro-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
+    align-items: center;
     gap: 8px;
-    max-width: 148px;
+    padding: 16px 12px;
   }
 
   .hydro-drop {
@@ -56,9 +51,6 @@
   }
 
   .hydro-clear {
-    position: absolute;
-    bottom: 4px;
-    right: 8px;
     width: 22px;
     height: 22px;
     border-radius: 50%;
@@ -70,6 +62,8 @@
     cursor: pointer;
     opacity: 0.55;
     transition: opacity 0.2s ease, transform 0.15s ease;
+    margin-left: 8px;
+    flex-shrink: 0;
   }
 
   .hydro-clear:hover {
@@ -85,7 +79,7 @@
 <body>
 
 <div class="hydro-wrap">
-  <div class="hydro-grid" id="hydro-grid"></div>
+  <div class="hydro-grid" id="hydro-grid" style="display: flex; gap: 8px;"></div>
   <button class="hydro-clear" id="hydro-clear" aria-label="Clear all drops">
     <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#9a8f78" stroke-width="2" stroke-linecap="round">
       <path d="M4 4 L20 20 M20 4 L4 20"/>
