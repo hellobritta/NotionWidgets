@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hydration Tracker</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #f4efe6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hydro-wrap {
+    position: relative;
+    padding: 32px 24px 56px;
+  }
+  .hydro-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    max-width: 320px;
+  }
+  .hydro-drop {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    background: none;
+    border: none;
+    padding: 0;
+    transition: transform 0.15s ease;
+  }
+  .hydro-drop:hover { transform: translateY(-2px); }
+  .hydro-drop:active { transform: scale(0.94); }
+  .hydro-outline {
+    fill: none;
+    stroke: #8a95a6;
+    stroke-width: 2.5;
+    transition: stroke 0.25s ease;
+  }
+  .hydro-fill {
+    fill: #378ADD;
+    transition: opacity 0.3s ease;
+  }
+  .hydro-clear {
+    position: absolute;
+    bottom: 16px;
+    right: 20px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid #c9bfa8;
+    background: #fdfbf6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+  }
+  .hydro-clear:hover { opacity: 1; transform: scale(1.08); }
+  .hydro-clear:active { transform: scale(0.92); }
+</style>
+</head>
+<body>
+
+<div class="hydro-wrap">
+  <div class="hydro-grid" id="hydro-grid"></div>
+  <button class="hydro-clear" id="hydro-clear" aria-label="Clear all drops">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#9a8f78" stroke-width="2" stroke-linecap="round">
+      <path d="M4 4 L20 20 M20 4 L4 20"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+(function() {
+  const TOTAL = 8;
+  const STORAGE_KEY = 'hydration-level';
+  const grid = document.getElementById('hydro-grid');
+  const dropPath = "M23 2 C23 2 6 24 6 38 C6 47.4 13.6 55 23 55 C32.4 55 40 47.4 40 38 C40 24 23 2 23 2 Z";
+  let level = 0;
+  const wraps = [];
+
+  for (let i = 0; i < TOTAL; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'hydro-drop';
+    btn.setAttribute('aria-label', 'Cup ' + (i + 1));
+    btn.innerHTML =
+      '<svg viewBox="0 0 46 58" width="46" height="58" style="overflow:visible">' +
+      '<defs><clipPath id="hydro-clip-' + i + '"><path d="' + dropPath + '"></path></clipPath></defs>' +
+      '<rect class="hydro-fill" x="0" y="0" width="46" height="58" clip-path="url(#hydro-clip-' + i + ')" style="opacity:0"></rect>' +
+      '<path class="hydro-outline" d="' + dropPath + '"></path>' +
+      '</svg>';
+    btn.addEventListener('click', function() {
+      const clicked = i + 1;
+      level = (level === clicked) ? clicked - 1 : clicked;
+      render();
+      save();
+    });
+    grid.appendChild(btn);
+    wraps.push(btn);
+  }
+
+  document.getElementById('hydro-clear').addEventListener('click', function() {
+    level = 0;
+    render();
+    save();
+  });
+
+  function render() {
+    wraps.forEach(function(btn, i) {
+      const fillEl = btn.querySelector('.hydro-fill');
+      fillEl.style.opacity = i < level ? '1' : '0';
+    });
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ level: level }));
+    } catch (e) {}
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.level === 'number') level = parsed.level;
+      }
+    } catch (e) {}
+    render();
+  }
+
+  load();
+})();
+</script>
+
+</body>
+</html>
