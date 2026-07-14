@@ -16,14 +16,14 @@
 
   .hydro-wrap {
     position: relative;
-    padding: 20px 16px 40px;
+    padding: 16px 12px 32px;
   }
 
   .hydro-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    max-width: 200px;
+    gap: 8px;
+    max-width: 148px;
   }
 
   .hydro-drop {
@@ -57,10 +57,10 @@
 
   .hydro-clear {
     position: absolute;
-    bottom: 8px;
-    right: 12px;
-    width: 26px;
-    height: 26px;
+    bottom: 4px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     border: 1.5px solid #c9bfa8;
     background: #fdfbf6;
@@ -87,7 +87,7 @@
 <div class="hydro-wrap">
   <div class="hydro-grid" id="hydro-grid"></div>
   <button class="hydro-clear" id="hydro-clear" aria-label="Clear all drops">
-    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9a8f78" stroke-width="2" stroke-linecap="round">
+    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#9a8f78" stroke-width="2" stroke-linecap="round">
       <path d="M4 4 L20 20 M20 4 L4 20"/>
     </svg>
   </button>
@@ -111,7 +111,7 @@
     btn.className = 'hydro-drop';
     btn.setAttribute('aria-label', 'Cup ' + (i + 1));
     btn.innerHTML =
-      '<svg viewBox="0 0 46 58" width="30" height="38" style="overflow:visible">' +
+      '<svg viewBox="0 0 46 58" width="22" height="28" style="overflow:visible">' +
       '<defs><clipPath id="hydro-clip-' + i + '"><path d="' + dropPath + '"></path></clipPath></defs>' +
       '<rect class="hydro-fill" x="0" y="0" width="46" height="58" clip-path="url(#hydro-clip-' + i + ')" style="opacity:0"></rect>' +
       '<path class="hydro-outline" d="' + dropPath + '"></path>' +
