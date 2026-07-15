@@ -85,15 +85,27 @@
 
   .step-dots {
     display: flex;
-    gap: 5px;
+    gap: 8px;
     margin-top: -4px;
   }
 
   .step-dot {
-    width: 6px;
-    height: 6px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: #d0d0d0;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+
+  .step-dot:hover {
+    transform: scale(1.25);
+  }
+
+  .step-dot:active {
+    transform: scale(0.9);
   }
 
   .step-dot.done {
@@ -219,11 +231,13 @@
   function renderDots() {
     stepDotsEl.innerHTML = '';
     for (let i = 0; i < 3; i++) {
-      const dot = document.createElement('div');
+      const dot = document.createElement('button');
       let cls = 'step-dot';
       if (i < stepIndex || isFinished) cls += ' done';
       else if (i === stepIndex) cls += ' current';
       dot.className = cls;
+      dot.setAttribute('aria-label', 'Go to ' + STEP_LABELS[i] + ' (step ' + (i + 1) + ')');
+      dot.addEventListener('click', function() { goToStep(i); });
       stepDotsEl.appendChild(dot);
     }
   }
@@ -238,6 +252,20 @@
     timerDisplay.textContent = formatTime(currentDuration());
     phaseLabel.textContent = STEP_LABELS[stepIndex];
     renderDots();
+  }
+
+  function goToStep(i) {
+    clearInterval(intervalId);
+    intervalId = null;
+    endTime = null;
+    remainingMs = null;
+    isRunning = false;
+    isPaused = false;
+    isFinished = false;
+    stepIndex = i;
+    pauseBtn.innerHTML = playIcon;
+    updateDisplayIdle();
+    saveState();
   }
 
   function playChime() {
