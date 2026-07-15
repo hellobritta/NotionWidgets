@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Work/Break/Work Timer</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .pomo-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 1.25rem;
+    background: #f0f0f0;
+    border-radius: 16px;
+    width: fit-content;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .input-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .input-field label {
+    font-size: 10px;
+    color: #8a8a8a;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .input-field input {
+    width: 42px;
+    text-align: center;
+    font-size: 14px;
+    padding: 4px 2px;
+    border-radius: 8px;
+    border: 1.5px solid #cfcfcf;
+    background: #ffffff;
+    color: #2b2b2b;
+  }
+
+  .input-field input:focus {
+    outline: none;
+    border-color: #9ab89a;
+  }
+
+  .pomo-image {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    margin-top: 4px;
+    object-fit: cover;
+  }
+
+  .phase-label {
+    font-size: 11px;
+    color: #8a8a8a;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .timer-display {
+    font-size: 30px;
+    font-weight: 600;
+    color: #2b2b2b;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .step-dots {
+    display: flex;
+    gap: 5px;
+    margin-top: -4px;
+  }
+
+  .step-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #d0d0d0;
+  }
+
+  .step-dot.done {
+    background: #8ba888;
+  }
+
+  .step-dot.current {
+    background: #6b6b6b;
+  }
+
+  .ctrl-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 2px;
+  }
+
+  .ctrl-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid #cfcfcf;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6b6b6b;
+    transition: transform 0.15s ease;
+  }
+
+  .ctrl-btn:hover {
+    transform: scale(1.06);
+  }
+
+  .ctrl-btn:active {
+    transform: scale(0.94);
+  }
+
+  .ctrl-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="pomo-wrap">
+  <div class="input-row">
+    <div class="input-field">
+      <label for="work1-input">Work</label>
+      <input type="number" id="work1-input" min="1" value="25">
+    </div>
+    <div class="input-field">
+      <label for="break-input">Break</label>
+      <input type="number" id="break-input" min="1" value="5">
+    </div>
+    <div class="input-field">
+      <label for="work2-input">Work</label>
+      <input type="number" id="work2-input" min="1" value="25">
+    </div>
+  </div>
+
+  <img class="pomo-image" src="pomdoro-main.png" alt="">
+
+  <div class="phase-label" id="phase-label">Work</div>
+  <div class="timer-display" id="timer-display">25:00</div>
+  <div class="step-dots" id="step-dots"></div>
+
+  <div class="ctrl-row">
+    <button class="ctrl-btn" id="pause-btn" aria-label="Start">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+    </button>
+    <button class="ctrl-btn" id="stop-btn" aria-label="Stop">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14"></rect></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'work-break-work-state';
+  const STEP_LABELS = ['Work', 'Break', 'Work'];
+
+  const work1Input = document.getElementById('work1-input');
+  const breakInput = document.getElementById('break-input');
+  const work2Input = document.getElementById('work2-input');
+  const timerDisplay = document.getElementById('timer-display');
+  const phaseLabel = document.getElementById('phase-label');
+  const stepDotsEl = document.getElementById('step-dots');
+  const pauseBtn = document.getElementById('pause-btn');
+  const stopBtn = document.getElementById('stop-btn');
+
+  const playIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>';
+  const pauseIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+
+  let stepIndex = 0; // 0 = work1, 1 = break, 2 = work2
+  let endTime = null;
+  let remainingMs = null;
+  let isRunning = false;
+  let isPaused = false;
+  let isFinished = false;
+  let intervalId = null;
+
+  function getMinutes(inputEl, fallback) {
+    const v = parseInt(inputEl.value, 10);
+    return (isNaN(v) || v <= 0) ? fallback : v;
+  }
+
+  function stepInputs() {
+    return [work1Input, breakInput, work2Input];
+  }
+
+  function stepFallbacks() {
+    return [25, 5, 25];
+  }
+
+  function currentDuration() {
+    const inputs = stepInputs();
+    const fallbacks = stepFallbacks();
+    return getMinutes(inputs[stepIndex], fallbacks[stepIndex]) * 60;
+  }
+
+  function renderDots() {
+    stepDotsEl.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+      const dot = document.createElement('div');
+      let cls = 'step-dot';
+      if (i < stepIndex || isFinished) cls += ' done';
+      else if (i === stepIndex) cls += ' current';
+      dot.className = cls;
+      stepDotsEl.appendChild(dot);
+    }
+  }
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function updateDisplayIdle() {
+    timerDisplay.textContent = formatTime(currentDuration());
+    phaseLabel.textContent = STEP_LABELS[stepIndex];
+    renderDots();
+  }
+
+  function playChime() {
+    const audio = new Audio('pomdoro-timer.mp3');
+    audio.play().catch(function(e) {});
+  }
+
+  function tick() {
+    const remaining = Math.round((endTime - Date.now()) / 1000);
+    if (remaining <= 0) {
+      playChime();
+      if (stepIndex >= 2) {
+        finishAll();
+        return;
+      }
+      stepIndex += 1;
+      updateDisplayIdle();
+      startPhaseTimer();
+      return;
+    }
+    timerDisplay.textContent = formatTime(remaining);
+  }
+
+  function startPhaseTimer() {
+    endTime = Date.now() + currentDuration() * 1000;
+    remainingMs = null;
+    isRunning = true;
+    isPaused = false;
+    isFinished = false;
+    pauseBtn.innerHTML = pauseIcon;
+    saveState();
+    if (intervalId) clearInterval(intervalId);
+    tick();
+    intervalId = setInterval(tick, 1000);
+  }
+
+  function finishAll() {
+    clearInterval(intervalId);
+    intervalId = null;
+    endTime = null;
+    remainingMs = null;
+    isRunning = false;
+    isPaused = false;
+    isFinished = true;
+    pauseBtn.innerHTML = playIcon;
+    timerDisplay.textContent = '0:00';
+    phaseLabel.textContent = 'Done';
+    renderDots();
+    clearState();
+  }
+
+  function togglePause() {
+    if (isFinished) {
+      stepIndex = 0;
+      isFinished = false;
+      updateDisplayIdle();
+      startPhaseTimer();
+      return;
+    }
+    if (!isRunning && !isPaused) {
+      startPhaseTimer();
+      return;
+    }
+    if (isPaused) {
+      endTime = Date.now() + remainingMs;
+      remainingMs = null;
+      isPaused = false;
+      isRunning = true;
+      pauseBtn.innerHTML = pauseIcon;
+      tick();
+      intervalId = setInterval(tick, 1000);
+    } else {
+      remainingMs = endTime - Date.now();
+      endTime = null;
+      isPaused = true;
+      isRunning = false;
+      clearInterval(intervalId);
+      intervalId = null;
+      pauseBtn.innerHTML = playIcon;
+    }
+    saveState();
+  }
+
+  function stopTimer() {
+    clearInterval(intervalId);
+    intervalId = null;
+    endTime = null;
+    remainingMs = null;
+    isRunning = false;
+    isPaused = false;
+    isFinished = false;
+    stepIndex = 0;
+    pauseBtn.innerHTML = playIcon;
+    updateDisplayIdle();
+    clearState();
+  }
+
+  pauseBtn.addEventListener('click', togglePause);
+  stopBtn.addEventListener('click', stopTimer);
+
+  stepInputs().forEach(function(inputEl) {
+    inputEl.addEventListener('change', function() {
+      saveState();
+      if (!isRunning && !isPaused && !isFinished) {
+        updateDisplayIdle();
+      }
+    });
+  });
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        work1: work1Input.value, brk: breakInput.value, work2: work2Input.value,
+        stepIndex: stepIndex,
+        endTime: endTime, remainingMs: remainingMs, isPaused: isPaused, isFinished: isFinished
+      }));
+    } catch (e) {}
+  }
+
+  function clearState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          work1: p.work1, brk: p.brk, work2: p.work2,
+          stepIndex: 0, endTime: null, remainingMs: null, isPaused: false, isFinished: false
+        }));
+      }
+    } catch (e) {}
+  }
+
+  function resume() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p.work1) work1Input.value = p.work1;
+        if (p.brk) breakInput.value = p.brk;
+        if (p.work2) work2Input.value = p.work2;
+        stepIndex = p.stepIndex || 0;
+        isFinished = !!p.isFinished;
+        if (isFinished) {
+          timerDisplay.textContent = '0:00';
+          phaseLabel.textContent = 'Done';
+          renderDots();
+        } else if (p.isPaused && p.remainingMs) {
+          remainingMs = p.remainingMs;
+          isPaused = true;
+          pauseBtn.innerHTML = playIcon;
+          phaseLabel.textContent = STEP_LABELS[stepIndex];
+          timerDisplay.textContent = formatTime(Math.round(remainingMs / 1000));
+          renderDots();
+        } else if (p.endTime && p.endTime > Date.now()) {
+          endTime = p.endTime;
+          isRunning = true;
+          pauseBtn.innerHTML = pauseIcon;
+          phaseLabel.textContent = STEP_LABELS[stepIndex];
+          renderDots();
+          tick();
+          intervalId = setInterval(tick, 1000);
+        } else {
+          updateDisplayIdle();
+        }
+      } else {
+        updateDisplayIdle();
+      }
+    } catch (e) {
+      updateDisplayIdle();
+    }
+  }
+
+  resume();
+})();
+</script>
+
+</body>
+</html>
