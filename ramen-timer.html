@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ramen Timer</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .ramen-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 1.5rem;
+  }
+
+  .pot-svg {
+    width: 160px;
+    height: 160px;
+    overflow: visible;
+  }
+
+  .pot-group {
+    transform-origin: 100px 130px;
+  }
+
+  .pot-group.boiling {
+    animation: potWobble 0.6s ease-in-out infinite;
+  }
+
+  .pot-group.paused {
+    animation-play-state: paused;
+  }
+
+  @keyframes potWobble {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    25% { transform: rotate(-1.2deg) translateY(-1px); }
+    75% { transform: rotate(1.2deg) translateY(-1px); }
+  }
+
+  .steam {
+    opacity: 0;
+  }
+
+  .steam.active {
+    animation: steamRise 2.2s ease-in-out infinite;
+  }
+
+  .steam.active.s2 {
+    animation-delay: 0.4s;
+  }
+
+  .steam.active.s3 {
+    animation-delay: 0.8s;
+  }
+
+  .steam.paused {
+    animation-play-state: paused;
+  }
+
+  @keyframes steamRise {
+    0% { opacity: 0; transform: translateY(0); }
+    20% { opacity: 0.55; }
+    80% { opacity: 0.3; }
+    100% { opacity: 0; transform: translateY(-16px); }
+  }
+
+  .face-cooking {
+    opacity: 0;
+  }
+
+  .face-cooking.active {
+    opacity: 1;
+  }
+
+  .face-idle.hidden {
+    opacity: 0;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .min-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid #8a95a6;
+    background: #fdfbf6;
+    font-size: 15px;
+    font-weight: 500;
+    color: #2b2b2b;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+
+  .min-btn:hover {
+    transform: scale(1.06);
+    background: #f4efe6;
+  }
+
+  .min-btn:active {
+    transform: scale(0.95);
+  }
+
+  .min-btn.selected {
+    background: #e6f1fb;
+    border-color: #378add;
+    color: #0c447c;
+  }
+
+  .timer-display {
+    font-size: 24px;
+    font-weight: 500;
+    color: #2b2b2b;
+    font-variant-numeric: tabular-nums;
+    min-height: 30px;
+  }
+
+  .ctrl-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid #c9bfa8;
+    background: #fdfbf6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #5f5e5a;
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+
+  .ctrl-btn:hover {
+    transform: scale(1.06);
+    background: #f4efe6;
+  }
+
+  .ctrl-btn:active {
+    transform: scale(0.94);
+  }
+
+  .ctrl-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="ramen-wrap">
+  <svg class="pot-svg" viewBox="0 0 200 200">
+    <g id="steam-group">
+      <path class="steam s1" d="M80,70 C70,60 90,50 80,40 C70,30 90,20 80,10" fill="none" stroke="#a9c4d8" stroke-width="3" stroke-linecap="round"></path>
+      <path class="steam s2" d="M100,70 C90,60 110,50 100,40 C90,30 110,20 100,10" fill="none" stroke="#a9c4d8" stroke-width="3" stroke-linecap="round"></path>
+      <path class="steam s3" d="M120,70 C110,60 130,50 120,40 C110,30 130,20 120,10" fill="none" stroke="#a9c4d8" stroke-width="3" stroke-linecap="round"></path>
+    </g>
+    <g class="pot-group" id="pot-group">
+      <path d="M28,110 C10,110 10,140 28,140" fill="none" stroke="#8a95a6" stroke-width="6" stroke-linecap="round"></path>
+      <path d="M172,110 C190,110 190,140 172,140" fill="none" stroke="#8a95a6" stroke-width="6" stroke-linecap="round"></path>
+      <ellipse cx="100" cy="90" rx="62" ry="14" fill="#fdfbf6" stroke="#8a95a6" stroke-width="2.5"></ellipse>
+      <circle cx="100" cy="78" r="6" fill="#fdfbf6" stroke="#8a95a6" stroke-width="2.5"></circle>
+      <rect x="40" y="90" width="120" height="80" rx="16" fill="#fdfbf6" stroke="#8a95a6" stroke-width="2.5"></rect>
+      <circle cx="65" cy="140" r="7" fill="#f4b6c0" opacity="0.75"></circle>
+      <circle cx="135" cy="140" r="7" fill="#f4b6c0" opacity="0.75"></circle>
+      <g class="face-idle" id="face-idle">
+        <circle cx="76" cy="127" r="8" fill="#2b2b2b"></circle>
+        <circle cx="124" cy="127" r="8" fill="#2b2b2b"></circle>
+        <circle cx="78.5" cy="124" r="2.4" fill="#ffffff"></circle>
+        <circle cx="126.5" cy="124" r="2.4" fill="#ffffff"></circle>
+        <path d="M92,144 Q100,150 108,144" fill="none" stroke="#2b2b2b" stroke-width="2.5" stroke-linecap="round"></path>
+      </g>
+      <g class="face-cooking" id="face-cooking">
+        <path d="M69,124 Q76,116 83,124" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"></path>
+        <path d="M117,124 Q124,116 131,124" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"></path>
+        <path d="M87,140 Q91,133 100,138 Q109,133 113,140 Q113,153 100,157 Q87,153 87,140 Z" fill="#f0798f" stroke="#8a2a3a" stroke-width="1.5"></path>
+      </g>
+    </g>
+  </svg>
+
+  <div class="btn-row" id="btn-row">
+    <button class="min-btn" data-min="3">3</button>
+    <button class="min-btn" data-min="4">4</button>
+    <button class="min-btn" data-min="5">5</button>
+  </div>
+
+  <div class="timer-display" id="timer-display"></div>
+
+  <div class="btn-row">
+    <button class="ctrl-btn" id="pause-btn" aria-label="Pause">
+      <svg id="pause-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="6" y="4" width="4" height="16"></rect>
+        <rect x="14" y="4" width="4" height="16"></rect>
+      </svg>
+    </button>
+    <button class="ctrl-btn" id="stop-btn" aria-label="Stop">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="5" width="14" height="14"></rect>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'ramen-timer-state';
+  const potGroup = document.getElementById('pot-group');
+  const steamEls = document.querySelectorAll('.steam');
+  const faceIdle = document.getElementById('face-idle');
+  const faceCooking = document.getElementById('face-cooking');
+  const timerDisplay = document.getElementById('timer-display');
+  const buttons = document.querySelectorAll('.min-btn');
+  const pauseBtn = document.getElementById('pause-btn');
+  const stopBtn = document.getElementById('stop-btn');
+  let endTime = null;
+  let remainingMs = null;
+  let isPaused = false;
+  let intervalId = null;
+  let audioCtx = null;
+
+  const playIconSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>';
+  const pauseIconSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function setBoiling(on) {
+    potGroup.classList.toggle('boiling', on);
+    steamEls.forEach(function(el) { el.classList.toggle('active', on); });
+    faceCooking.classList.toggle('active', on);
+    faceIdle.classList.toggle('hidden', on);
+  }
+
+  function setPausedVisual(on) {
+    potGroup.classList.toggle('paused', on);
+    steamEls.forEach(function(el) { el.classList.toggle('paused', on); });
+    pauseBtn.innerHTML = on ? playIconSVG : pauseIconSVG;
+  }
+
+  function playAlarm() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      const dingSpacing = 0.14;
+      const totalDings = 12;
+      for (let i = 0; i < totalDings; i++) {
+        const t = now + i * dingSpacing;
+        const freq = (i % 2 === 0) ? 2100 : 1750;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, t);
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.exponentialRampToValueAtTime(0.22, t + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.12);
+      }
+    } catch (e) {}
+  }
+
+  function tick() {
+    const remaining = Math.round((endTime - Date.now()) / 1000);
+    if (remaining <= 0) {
+      timerDisplay.textContent = '0:00';
+      setBoiling(false);
+      clearInterval(intervalId);
+      intervalId = null;
+      endTime = null;
+      remainingMs = null;
+      isPaused = false;
+      buttons.forEach(function(b) { b.classList.remove('selected'); });
+      clearState();
+      playAlarm();
+      return;
+    }
+    timerDisplay.textContent = formatTime(remaining);
+  }
+
+  function startTimer(minutes) {
+    endTime = Date.now() + minutes * 60 * 1000;
+    remainingMs = null;
+    isPaused = false;
+    setPausedVisual(false);
+    setBoiling(true);
+    buttons.forEach(function(b) {
+      b.classList.toggle('selected', parseInt(b.dataset.min) === minutes);
+    });
+    saveState();
+    if (intervalId) clearInterval(intervalId);
+    tick();
+    intervalId = setInterval(tick, 1000);
+  }
+
+  function togglePause() {
+    if (endTime === null && remainingMs === null) return;
+    if (isPaused) {
+      endTime = Date.now() + remainingMs;
+      remainingMs = null;
+      isPaused = false;
+      setPausedVisual(false);
+      tick();
+      intervalId = setInterval(tick, 1000);
+    } else {
+      remainingMs = endTime - Date.now();
+      endTime = null;
+      isPaused = true;
+      clearInterval(intervalId);
+      intervalId = null;
+      setPausedVisual(true);
+    }
+    saveState();
+  }
+
+  function stopTimer() {
+    clearInterval(intervalId);
+    intervalId = null;
+    endTime = null;
+    remainingMs = null;
+    isPaused = false;
+    setPausedVisual(false);
+    setBoiling(false);
+    timerDisplay.textContent = '';
+    buttons.forEach(function(b) { b.classList.remove('selected'); });
+    clearState();
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ endTime: endTime, remainingMs: remainingMs, isPaused: isPaused }));
+    } catch (e) {}
+  }
+
+  function clearState() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {}
+  }
+
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      startTimer(parseInt(btn.dataset.min));
+    });
+  });
+
+  pauseBtn.addEventListener('click', togglePause);
+  stopBtn.addEventListener('click', stopTimer);
+
+  function resume() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.isPaused && parsed.remainingMs) {
+          remainingMs = parsed.remainingMs;
+          isPaused = true;
+          setBoiling(true);
+          setPausedVisual(true);
+          timerDisplay.textContent = formatTime(Math.round(remainingMs / 1000));
+        } else if (parsed.endTime && parsed.endTime > Date.now()) {
+          endTime = parsed.endTime;
+          setBoiling(true);
+          tick();
+          intervalId = setInterval(tick, 1000);
+        }
+      }
+    } catch (e) {}
+  }
+
+  resume();
+})();
+</script>
+
+</body>
+</html>
