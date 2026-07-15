@@ -226,7 +226,6 @@
   let remainingMs = null;
   let isPaused = false;
   let intervalId = null;
-  let audioCtx = null;
 
   const playIconSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>';
   const pauseIconSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
@@ -251,27 +250,8 @@
   }
 
   function playAlarm() {
-    try {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const now = audioCtx.currentTime;
-      const dingSpacing = 0.14;
-      const totalDings = 12;
-      for (let i = 0; i < totalDings; i++) {
-        const t = now + i * dingSpacing;
-        const freq = (i % 2 === 0) ? 2100 : 1750;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(freq, t);
-        gain.gain.setValueAtTime(0.001, t);
-        gain.gain.exponentialRampToValueAtTime(0.22, t + 0.008);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(t);
-        osc.stop(t + 0.12);
-      }
-    } catch (e) {}
+    const audio = new Audio('Alarm-ring.mp3');
+    audio.play().catch(function(e) {});
   }
 
   function tick() {
