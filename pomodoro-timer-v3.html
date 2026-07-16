@@ -171,7 +171,7 @@
 
   <img class="pomo-image" src="pomdoro-main.png" alt="">
 
-  <div class="phase-label" id="phase-label">Work Session 1/4</div>
+  <div class="phase-label" id="phase-label">Work</div>
   <div class="timer-display" id="timer-display">25:00</div>
   <div class="round-dots" id="round-dots"></div>
 
@@ -229,9 +229,8 @@
   }
 
   function phaseLabelText() {
-    if (phase === 'work') return 'Work Session ' + roundNum + '/' + ROUNDS_PER_CYCLE;
-    if (isLongBreakRound()) return 'Long Break';
-    return 'Break Session ' + roundNum + '/' + ROUNDS_PER_CYCLE;
+    if (phase === 'work') return 'Work';
+    return isLongBreakRound() ? 'Long Break' : 'Break';
   }
 
   function renderDots() {
