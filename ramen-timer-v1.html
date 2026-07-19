@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ramen Timer</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .ramen-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 1.5rem;
+  }
+
+  .pot-stage {
+    position: relative;
+    width: 140px;
+    height: 140px;
+  }
+
+  .pot-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity 0.25s ease;
+    z-index: 1;
+  }
+
+  .pot-img.idle-img {
+    opacity: 1;
+  }
+
+  .pot-img.boiling-img {
+    opacity: 0;
+  }
+
+  .pot-stage.boiling .idle-img {
+    opacity: 0;
+  }
+
+  .pot-stage.boiling .boiling-img {
+    opacity: 1;
+  }
+
+  .pot-stage.boiling .boiling-img {
+    animation: potWobble 0.6s ease-in-out infinite;
+  }
+
+  @keyframes potWobble {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    25% { transform: rotate(-1.5deg) translateY(-1px); }
+    75% { transform: rotate(1.5deg) translateY(-1px); }
+  }
+
+  .steam-overlay {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 3;
+  }
+
+  .pot-stage.boiling .steam-overlay {
+    opacity: 1;
+  }
+
+  .steam-path {
+    opacity: 0;
+    transform-origin: center bottom;
+  }
+
+  .pot-stage.boiling .steam-path {
+    animation: steamRise 3s ease-in-out infinite;
+  }
+
+  .pot-stage.boiling .steam-path.s2 {
+    animation-delay: 0.6s;
+  }
+
+  .pot-stage.boiling .steam-path.s3 {
+    animation-delay: 1.2s;
+  }
+
+  .pot-stage.boiling .steam-path.s4 {
+    animation-delay: 1.8s;
+  }
+
+  @keyframes steamRise {
+    0% { opacity: 0; transform: translateY(0) scale(1); }
+    15% { opacity: 0.35; }
+    55% { opacity: 0.2; }
+    100% { opacity: 0; transform: translateY(-26px) scale(1.6); }
+  }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .input-field label {
+    font-size: 10px;
+    color: #8a8a8a;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .input-field input {
+    width: 52px;
+    text-align: center;
+    font-size: 14px;
+    padding: 5px 2px;
+    border-radius: 8px;
+    border: 1.5px solid #cfcfcf;
+    background: #ffffff;
+    color: #2b2b2b;
+  }
+
+  .input-field input:focus {
+    outline: none;
+    border-color: #9ab89a;
+  }
+
+  .timer-display {
+    font-size: 26px;
+    font-weight: 600;
+    color: #2b2b2b;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ctrl-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .ctrl-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid #cfcfcf;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6b6b6b;
+    transition: transform 0.15s ease;
+  }
+
+  .ctrl-btn:hover {
+    transform: scale(1.06);
+  }
+
+  .ctrl-btn:active {
+    transform: scale(0.94);
+  }
+
+  .ctrl-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="ramen-wrap">
+  <div class="pot-stage" id="pot-stage">
+    <svg class="steam-overlay" viewBox="0 0 140 50">
+      <defs>
+        <filter id="vaporBlur" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="1.6"></feGaussianBlur>
+        </filter>
+      </defs>
+      <g filter="url(#vaporBlur)">
+        <path class="steam-path s1" d="M52,50 C32,40 72,32 50,24 C32,15 72,6 52,-4" fill="none" stroke="#c3d6e2" stroke-width="4" stroke-linecap="round"></path>
+        <path class="steam-path s2" d="M65,50 C87,39 46,31 68,22 C87,13 48,4 66,-6" fill="none" stroke="#c9dae4" stroke-width="3" stroke-linecap="round"></path>
+        <path class="steam-path s3" d="M78,50 C58,40 100,31 76,23 C56,14 98,5 78,-5" fill="none" stroke="#c3d6e2" stroke-width="3.5" stroke-linecap="round"></path>
+        <path class="steam-path s4" d="M60,50 C80,38 40,30 64,21 C82,12 42,3 62,-7" fill="none" stroke="#cfdee6" stroke-width="2.5" stroke-linecap="round"></path>
+      </g>
+    </svg>
+    <img class="pot-img idle-img" src="ramen-1.png" alt="">
+    <img class="pot-img boiling-img" src="ramen-2.png" alt="">
+  </div>
+
+  <div class="input-row">
+    <div class="input-field">
+      <label for="minutes-input">Minutes</label>
+      <input type="number" id="minutes-input" min="1" value="5">
+    </div>
+  </div>
+
+  <div class="timer-display" id="timer-display">5:00</div>
+
+  <div class="ctrl-row">
+    <button class="ctrl-btn" id="pause-btn" aria-label="Start">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+    </button>
+    <button class="ctrl-btn" id="stop-btn" aria-label="Stop">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14"></rect></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'ramen-timer-custom-state';
+  const potStage = document.getElementById('pot-stage');
+  const minutesInput = document.getElementById('minutes-input');
+  const timerDisplay = document.getElementById('timer-display');
+  const pauseBtn = document.getElementById('pause-btn');
+  const stopBtn = document.getElementById('stop-btn');
+
+  const playIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>';
+  const pauseIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+
+  let endTime = null;
+  let remainingMs = null;
+  let isRunning = false;
+  let isPaused = false;
+  let intervalId = null;
+
+  function getMinutes() {
+    const v = parseInt(minutesInput.value, 10);
+    return (isNaN(v) || v <= 0) ? 5 : v;
+  }
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function setBoiling(on) {
+    potStage.classList.toggle('boiling', on);
+  }
+
+  function updateDisplayIdle() {
+    timerDisplay.textContent = formatTime(getMinutes() * 60);
+  }
+
+  function playAlarm() {
+    const audio = new Audio('Alarm-ring.mp3');
+    audio.play().catch(function(e) {});
+  }
+
+  function tick() {
+    const remaining = Math.round((endTime - Date.now()) / 1000);
+    if (remaining <= 0) {
+      timerDisplay.textContent = '0:00';
+      setBoiling(false);
+      clearInterval(intervalId);
+      intervalId = null;
+      endTime = null;
+      remainingMs = null;
+      isRunning = false;
+      isPaused = false;
+      pauseBtn.innerHTML = playIcon;
+      clearState();
+      playAlarm();
+      return;
+    }
+    timerDisplay.textContent = formatTime(remaining);
+  }
+
+  function startTimer() {
+    endTime = Date.now() + getMinutes() * 60 * 1000;
+    remainingMs = null;
+    isRunning = true;
+    isPaused = false;
+    pauseBtn.innerHTML = pauseIcon;
+    setBoiling(true);
+    saveState();
+    if (intervalId) clearInterval(intervalId);
+    tick();
+    intervalId = setInterval(tick, 1000);
+  }
+
+  function togglePause() {
+    if (!isRunning && !isPaused) {
+      startTimer();
+      return;
+    }
+    if (isPaused) {
+      endTime = Date.now() + remainingMs;
+      remainingMs = null;
+      isPaused = false;
+      isRunning = true;
+      pauseBtn.innerHTML = pauseIcon;
+      setBoiling(true);
+      tick();
+      intervalId = setInterval(tick, 1000);
+    } else {
+      remainingMs = endTime - Date.now();
+      endTime = null;
+      isPaused = true;
+      isRunning = false;
+      clearInterval(intervalId);
+      intervalId = null;
+      pauseBtn.innerHTML = playIcon;
+      setBoiling(false);
+    }
+    saveState();
+  }
+
+  function stopTimer() {
+    clearInterval(intervalId);
+    intervalId = null;
+    endTime = null;
+    remainingMs = null;
+    isRunning = false;
+    isPaused = false;
+    pauseBtn.innerHTML = playIcon;
+    setBoiling(false);
+    updateDisplayIdle();
+    clearState();
+  }
+
+  pauseBtn.addEventListener('click', togglePause);
+  stopBtn.addEventListener('click', stopTimer);
+
+  minutesInput.addEventListener('change', function() {
+    saveState();
+    if (!isRunning && !isPaused) {
+      updateDisplayIdle();
+    }
+  });
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        minutes: minutesInput.value,
+        endTime: endTime, remainingMs: remainingMs, isPaused: isPaused
+      }));
+    } catch (e) {}
+  }
+
+  function clearState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          minutes: p.minutes, endTime: null, remainingMs: null, isPaused: false
+        }));
+      }
+    } catch (e) {}
+  }
+
+  function resume() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p.minutes) minutesInput.value = p.minutes;
+        if (p.isPaused && p.remainingMs) {
+          remainingMs = p.remainingMs;
+          isPaused = true;
+          pauseBtn.innerHTML = playIcon;
+          setBoiling(false);
+          timerDisplay.textContent = formatTime(Math.round(remainingMs / 1000));
+        } else if (p.endTime && p.endTime > Date.now()) {
+          endTime = p.endTime;
+          isRunning = true;
+          pauseBtn.innerHTML = pauseIcon;
+          setBoiling(true);
+          tick();
+          intervalId = setInterval(tick, 1000);
+        } else {
+          updateDisplayIdle();
+        }
+      } else {
+        updateDisplayIdle();
+      }
+    } catch (e) {
+      updateDisplayIdle();
+    }
+  }
+
+  resume();
+})();
+</script>
+
+</body>
+</html>
