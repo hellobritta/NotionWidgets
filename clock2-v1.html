@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Clock Widget</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .clock-stage {
+    position: relative;
+    width: 260px;
+  }
+
+  .clock-img {
+    width: 100%;
+    display: block;
+  }
+
+  .screen-overlay {
+    position: absolute;
+    top: 40%;
+    left: 8.8%;
+    width: 58%;
+    height: 34%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    pointer-events: none;
+    transform: rotate(2deg);
+  }
+
+  .time-text {
+    font-family: 'Digital-7';
+    src: url(Digital-7.ttf') format:('truetype');
+    font-weight: 700;
+    font-size: 37px;
+    letter-spacing: 3px;
+    color: #ffe1b2;
+    text-shadow: 0 0 5px #ffe1b2, 0 0 6px rgba(255, 225, 178, 0.3);
+  }
+
+  .date-text {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 700;
+    font-size: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ffe1b2;
+    text-shadow: 0 0 4px #ffe1b2, 0 0 10px rgba(255, 225, 178, 0.6);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="clock-stage">
+  <img class="clock-img" src="alarm-clock.png" alt="">
+  <div class="screen-overlay">
+    <div class="time-text" id="time-text"></div>
+    <div class="date-text" id="date-text"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const timeEl = document.getElementById('time-text');
+  const dateEl = document.getElementById('date-text');
+  const DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+
+  function pad(n) {
+    return n < 10 ? '0' + n : '' + n;
+  }
+
+  function update() {
+    const now = new Date();
+    const hh = pad(now.getHours());
+    const mm = pad(now.getMinutes());
+    timeEl.textContent = hh + ':' + mm;
+
+    const dayName = DAYS[now.getDay()];
+    const monthName = MONTHS[now.getMonth()];
+    const dayNum = now.getDate();
+    dateEl.textContent = dayName + ' ' + monthName + ' ' + dayNum;
+  }
+
+  update();
+  setInterval(update, 1000);
+})();
+</script>
+
+</body>
+</html>
